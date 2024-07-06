@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlphabetManager;
 use App\Http\Controllers\AuthManager;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::get('/', function () {
 
     Route::get('/profile/changePassword', [AuthManager::class, 'showChangePasswordForm'])->name('changePassword');
     Route::post('/profile/changePassword', [AuthManager::class, 'changePassword'])->name('password.update');
-
+    
+    Route::get('/hiragana',[AlphabetManager::class,'GetAlphabetHiragana'])->name('GetHiragana');
 
 
