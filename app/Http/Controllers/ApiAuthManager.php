@@ -10,18 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiAuthManager extends Controller
 {
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -73,27 +61,62 @@ class ApiAuthManager extends Controller
     /**
      * Display the specified resource.
      */
-    public function login(Request $request)
+    public function RequestPassword()
+    {
+       // Lấy số điện thoại từ session
+    $phone = $request->session()->get('phone');
+
+    // Kiểm tra và lấy thông tin người dùng từ số điện thoại
+    $user = User::where('phone', $phone)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status' => 404,
+            'message' => 'Người dùng không tồn tại',
+        ], 404);
+    }
+
+    // Lấy thông tin email
+    $email = $user->email;
+
+    if (Hash::check($request->password, $user->password)) {
+        return response()->json([
+            'status' => 200,
+            'message' => 'Đăng nhập thành công',
+            'token' => $user->createToken("API TOKEN")->plainTextToken,
+        ], 200);
+    } else {
+        return response()->json([
+            'status' => 401,
+            'message' => 'Mật khẩu không đúng',
+        ], 401);
+    }
+
+
+    function loginAndCheck(Request $request)
     {
         try {
             $request->validate([
-                'phone' => 'required',
-                'password' => 'required',
+                'phone' => 'required|numeric|digits:10', // ví dụ, yêu cầu số điện thoại có 10 chữ số
             ]);
-            $credentials = $request->only('phone', 'password');
+            // Kiểm tra và lấy thông tin người dùng từ số điện thoại
             $user = User::where('phone', $request->phone)->first();
-            if (Auth::attempt($credentials)) {
+
+            if (!$user) {
                 return response()->json([
-                    'status' => 200,
-                    'message' => 'Đăng nhập thành công',
-                    'token' => $user->createToken("API TOKEN")->plainTextToken
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Số điện thoại & mật khẩu sai'
-                ], 500);
+                    'status' => 404,
+                    'message' => 'Số điện thoại chưa được đăng ký',
+                ], 404);
             }
+
+            // Lưu thông tin số điện thoại vào session để sử dụng sau này
+            $request->session()->put('phone', $request->phone);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Số điện thoại đã được đăng ký',
+                'phone' => $request->phone,
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

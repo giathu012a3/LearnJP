@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 Route::post('registration', [ApiAuthManager::class,'store']);
-Route::post('login', [ApiAuthManager::class,'login']);
+Route::post('loginAndCheck', [ApiAuthManager::class,'loginAndCheck']);
+Route::post('RequestPassword', [ApiAuthManager::class,'RequestPassword']);
 
 Route::group([
 "middleware"=>['auth:sanctum']
