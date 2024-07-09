@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 // });
 Route::post('registration', [ApiAuthManager::class,'store']);
 Route::post('loginAndCheck', [ApiAuthManager::class,'loginAndCheck']);
-Route::post('RequestPassword', [ApiAuthManager::class,'RequestPassword']);
+Route::post('verifyPassword', [ApiAuthManager::class,'verifyPassword']);
 
 Route::group([
 "middleware"=>['auth:sanctum']

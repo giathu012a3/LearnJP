@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiAuthManager extends Controller
 {
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         try {
@@ -55,49 +67,16 @@ class ApiAuthManager extends Controller
                 'message' => 'tạo tài khoản thất bại'
             ], 500);
         }
-
     }
 
     /**
      * Display the specified resource.
      */
-    public function RequestPassword()
-    {
-       // Lấy số điện thoại từ session
-    $phone = $request->session()->get('phone');
-
-    // Kiểm tra và lấy thông tin người dùng từ số điện thoại
-    $user = User::where('phone', $phone)->first();
-
-    if (!$user) {
-        return response()->json([
-            'status' => 404,
-            'message' => 'Người dùng không tồn tại',
-        ], 404);
-    }
-
-    // Lấy thông tin email
-    $email = $user->email;
-
-    if (Hash::check($request->password, $user->password)) {
-        return response()->json([
-            'status' => 200,
-            'message' => 'Đăng nhập thành công',
-            'token' => $user->createToken("API TOKEN")->plainTextToken,
-        ], 200);
-    } else {
-        return response()->json([
-            'status' => 401,
-            'message' => 'Mật khẩu không đúng',
-        ], 401);
-    }
-
-
-    function loginAndCheck(Request $request)
+    public function loginAndCheck(Request $request)
     {
         try {
-            $request->validate([
-                'phone' => 'required|numeric|digits:10', // ví dụ, yêu cầu số điện thoại có 10 chữ số
+            $validator = Validator::make($request->all(), [
+                'phone' => 'required|digits:10',
             ]);
             // Kiểm tra và lấy thông tin người dùng từ số điện thoại
             $user = User::where('phone', $request->phone)->first();
@@ -125,6 +104,49 @@ class ApiAuthManager extends Controller
         }
     }
 
+    public function verifyPassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'password' => 'required|min:8',
+            ]);
+            // Lấy số điện thoại từ session
+            $phone = $request->session()->get('phone');
+    
+            // Kiểm tra và lấy thông tin người dùng từ số điện thoại
+            $user = User::where('phone', $phone)->first();
+    
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'Người dùng không tồn tại',
+                ], 404);
+            }
+    
+            // Lấy thông tin email
+            $email = $user->email;
+             // Xác thực thông tin đăng nhập
+        if (Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 200,
+                'message' => 'Đăng nhập thành công',
+                'token' => $user->createToken("API TOKEN")->plainTextToken,
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Mật khẩu không đúng',
+            ], 401);
+        } }catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'tạo tài khoản thất bại'
+            ], 500);    
+        }
+       
+
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -148,7 +170,7 @@ class ApiAuthManager extends Controller
         return response()->json([
             'status' => true,
             'message' => "Người dùng đăng xuất",
-            'data'=>[],
-        ],200);
+            'data' => [],
+        ], 200);
     }
 }
